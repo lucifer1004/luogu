@@ -8,21 +8,20 @@ using namespace std;
 const int N = 5e5 + 10;
 const int K = 20;
 vector<int> a[N];
-int dep[N], f[K][N];
+int dep[N], f[N][K];
 
 void DFS(int u, int parent) {
-  f[0][u] = parent;
+  f[u][0] = parent;
   dep[u] = parent < 0 ? 0 : dep[parent] + 1;
   for (int k = 1; k < K; ++k) {
-    int v = f[k - 1][u];
-    f[k][u] = v < 0 ? -1 : f[k - 1][v];
+    int v = f[u][k - 1];
+    f[u][k] = v < 0 ? -1 : f[v][k - 1];
     if (v < 0)
       break;
   }
   for (auto &v : a[u]) {
-    if (v == parent)
-      continue;
-    DFS(v, u);
+    if (v != parent)
+      DFS(v, u);
   }
 }
 
@@ -31,15 +30,15 @@ int LCA(int u, int v) {
     swap(u, v);
   for (int delta = dep[u] - dep[v], k = 0; k < K; ++k) {
     if (delta & (1 << k))
-      u = f[k][u];
+      u = f[u][k];
   }
   for (int k = K - 1; k >= 0; --k) {
-    if (f[k][u] != f[k][v]) {
-      u = f[k][u];
-      v = f[k][v];
+    if (f[u][k] != f[v][k]) {
+      u = f[u][k];
+      v = f[v][k];
     }
   }
-  return u == v ? u : f[0][u];
+  return u == v ? u : f[u][0];
 }
 
 int main() {
